@@ -1,1 +1,1 @@
-worker: bin/szkuvify
+worker: bin/stalkerify
