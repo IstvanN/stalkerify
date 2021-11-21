@@ -5,7 +5,7 @@ import (
 	"os"
 
 	"github.com/globalsign/mgo/bson"
-	"github.com/zmb3/spotify"
+	"github.com/zmb3/spotify/v2"
 )
 
 var playlistID = os.Getenv("SPOTIFY_PLAYLIST_ID")
