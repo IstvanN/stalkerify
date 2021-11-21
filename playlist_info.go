@@ -32,3 +32,13 @@ func getPlaylistInfoByID(id spotify.ID) (playListInfo, error) {
 
 	return pi, nil
 }
+
+func updatePlaylistInfo(currentPi playListInfo, playlist *spotify.FullPlaylist) error {
+	updatedPi := createPlaylistInfoFromPlaylist(playlist)
+
+	if err := getMongoCollection().Update(currentPi, updatedPi); err != nil {
+		return fmt.Errorf("error updating playlist info in DB: %v", err)
+	}
+
+	return nil
+}
