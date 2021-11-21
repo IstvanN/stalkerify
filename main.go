@@ -32,11 +32,15 @@ func main() {
 	}
 
 	if playlist.Tracks.Total > currentPi.NumberOfTracks {
-		log.Println("N E W S O N G F O U N D")
-		//TODO send mail functionality
+		log.Println("new song found, email has been sent to you!")
+		if err := sendMail(playlist.Name); err != nil {
+			log.Fatalln(err)
+		}
 
 		if err := updatePlaylistInfo(currentPi, playlist); err != nil {
 			log.Fatalln(err)
 		}
+		return
 	}
+	log.Println("no new song found! :(")
 }
