@@ -16,10 +16,12 @@ var (
 )
 
 func sendMail(playlistName string, newSongs []newSongData) error {
-	msg := []byte(fmt.Sprintf("To: %v\r\n"+
-		"Subject: New song(s) in %v!\r\n"+
-		"\r\n"+
-		formMessage(newSongs), mailTo, playlistName))
+	msg := []byte(fmt.Sprintf(
+		"From: stalkerify@archiez.io\r\n"+
+			"To: %v\r\n"+
+			"Subject: New song(s) in %v!\r\n"+
+			"\r\n"+
+			formMessage(newSongs), mailTo, playlistName))
 
 	auth := smtp.PlainAuth("", mailUser, mailPw, mailSmtpHost)
 
@@ -34,8 +36,8 @@ func formMessage(newSongs []newSongData) string {
 	finalMessage := "Hey there! Here is a list of the new songs:\r\n" + "\r\n"
 
 	for i, ns := range newSongs {
-		finalMessage += fmt.Sprintf("%d. %s - %s added by %v at %v\r\n", i+1, ns.artist, ns.title, ns.addedBy, ns.addedAt) + "\r\n" + "Regards: Stalkerify created by Archie"
+		finalMessage += fmt.Sprintf("%d. %s - %s added by %v at %v\r\n", i+1, ns.artist, ns.title, ns.addedBy, ns.addedAt) + "\r\n"
 	}
 
-	return finalMessage
+	return finalMessage + "Regards: Stalkerify created by Archie"
 }
