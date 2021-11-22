@@ -42,5 +42,5 @@ func main() {
 		}
 		return
 	}
-	log.Println("no new song found! :(")
+	log.Println("no new song found!")
 }
