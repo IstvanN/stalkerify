@@ -20,6 +20,7 @@ func sendMail(playlistName string, newSongs []newSongData) error {
 		"Subject: New song in %v!\r\n"+
 		"\r\n"+
 		formMessage(newSongs), mailTo, playlistName))
+	fmt.Println(string(msg))
 	auth := smtp.PlainAuth("", mailUser, mailPw, mailSmtpHost)
 
 	if err := smtp.SendMail(mailSmtpHost+":"+mailSmtpPort, auth, mailFrom, []string{mailTo}, msg); err != nil {
@@ -33,8 +34,8 @@ func formMessage(newSongs []newSongData) string {
 	finalMessage := "Hey there! The new songs are:\r\n" + "\r\n"
 
 	for i, ns := range newSongs {
-		finalMessage += fmt.Sprintf("%d. %s - %s added by %v\r\n", i+1, ns.artist, ns.title, ns.addedBy) + "\r\n"
+		finalMessage += fmt.Sprintf("%d. %s - %s added by %v at %v\r\n", i+1, ns.artist, ns.title, ns.addedBy, ns.addedAt) + "\r\n"
 	}
-	fmt.Println(finalMessage)
+
 	return finalMessage
 }

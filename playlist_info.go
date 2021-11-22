@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"time"
 
 	"github.com/globalsign/mgo/bson"
 	"github.com/zmb3/spotify/v2"
@@ -18,7 +19,7 @@ type playListInfo struct {
 }
 
 type newSongData struct {
-	addedBy, artist, title string
+	addedBy, artist, title, addedAt string
 }
 
 func createPlaylistInfoFromPlaylist(playlist *spotify.FullPlaylist) playListInfo {
@@ -70,10 +71,14 @@ func getNewSongDatas(playlist *spotify.FullPlaylist, pi playListInfo) []newSongD
 	var newSongs []newSongData
 	for i, track := range playlist.Tracks.Tracks {
 		if i > pi.NumberOfTracks-1 {
+			addedAt, _ := time.Parse(spotify.TimestampLayout, track.AddedAt)
+			budapest, _ := time.LoadLocation("Europe/Budapest")
+			addedAtString := addedAt.In(budapest).Format("2006.01.06 15:03")
 			nsd := newSongData{
-				addedBy: track.AddedBy.DisplayName,
+				addedBy: track.AddedBy.ID,
 				artist:  track.Track.Artists[0].Name,
 				title:   track.Track.Name,
+				addedAt: addedAtString,
 			}
 			newSongs = append(newSongs, nsd)
 		}
