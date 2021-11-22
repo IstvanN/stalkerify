@@ -53,7 +53,10 @@ func comparePlaylistWithPlaylistInfoInDB(playlist *spotify.FullPlaylist, pi play
 	if playlist.Tracks.Total > pi.NumberOfTracks {
 		log.Println("new song found, email has been sent to you!")
 
-		newSongs := getNewSongDatas(playlist, pi)
+		newSongs, err := getNewSongDatas(playlist, pi)
+		if err != nil {
+			return fmt.Errorf("error getting info on new songs: %v", err)
+		}
 		if err := sendMail(playlist.Name, newSongs); err != nil {
 			return fmt.Errorf("error sending mail: %v", err)
 		}
@@ -67,21 +70,36 @@ func comparePlaylistWithPlaylistInfoInDB(playlist *spotify.FullPlaylist, pi play
 	return nil
 }
 
-func getNewSongDatas(playlist *spotify.FullPlaylist, pi playListInfo) []newSongData {
+func getNewSongDatas(playlist *spotify.FullPlaylist, pi playListInfo) ([]newSongData, error) {
 	var newSongs []newSongData
 	for i, track := range playlist.Tracks.Tracks {
 		if i > pi.NumberOfTracks-1 {
-			addedAt, _ := time.Parse(spotify.TimestampLayout, track.AddedAt)
-			budapest, _ := time.LoadLocation("Europe/Budapest")
-			addedAtString := addedAt.In(budapest).Format("2006.01.06 15:03")
+			addedAt, err := transformAddedAt(track.AddedAt)
+			if err != nil {
+				return nil, err
+			}
 			nsd := newSongData{
 				addedBy: track.AddedBy.ID,
 				artist:  track.Track.Artists[0].Name,
 				title:   track.Track.Name,
-				addedAt: addedAtString,
+				addedAt: addedAt,
 			}
 			newSongs = append(newSongs, nsd)
 		}
 	}
-	return newSongs
+	return newSongs, nil
+}
+
+func transformAddedAt(old string) (string, error) {
+	addedAt, err := time.Parse(spotify.TimestampLayout, old)
+	if err != nil {
+		return "", err
+	}
+
+	budapest, err := time.LoadLocation("Europe/Budapest")
+	if err != nil {
+		return "", err
+	}
+
+	return addedAt.In(budapest).Format("2006.01.06 15:03"), nil
 }
