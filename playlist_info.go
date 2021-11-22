@@ -17,6 +17,10 @@ type playListInfo struct {
 	NumberOfTracks int        `bson:"numberOfTracks"`
 }
 
+type newSongData struct {
+	addedBy, artist, title string
+}
+
 func createPlaylistInfoFromPlaylist(playlist *spotify.FullPlaylist) playListInfo {
 	return playListInfo{
 		ID:             playlist.ID,
@@ -47,7 +51,9 @@ func updatePlaylistInfo(currentPi playListInfo, playlist *spotify.FullPlaylist) 
 func comparePlaylistWithPlaylistInfoInDB(playlist *spotify.FullPlaylist, pi playListInfo) error {
 	if playlist.Tracks.Total > pi.NumberOfTracks {
 		log.Println("new song found, email has been sent to you!")
-		if err := sendMail(playlist.Name); err != nil {
+
+		newSongs := getNewSongDatas(playlist, pi)
+		if err := sendMail(playlist.Name, newSongs); err != nil {
 			return fmt.Errorf("error sending mail: %v", err)
 		}
 
@@ -58,4 +64,19 @@ func comparePlaylistWithPlaylistInfoInDB(playlist *spotify.FullPlaylist, pi play
 	}
 	log.Println("no new song found!")
 	return nil
+}
+
+func getNewSongDatas(playlist *spotify.FullPlaylist, pi playListInfo) []newSongData {
+	var newSongs []newSongData
+	for i, track := range playlist.Tracks.Tracks {
+		if i > pi.NumberOfTracks-1 {
+			nsd := newSongData{
+				addedBy: track.AddedBy.DisplayName,
+				artist:  track.Track.Artists[0].Name,
+				title:   track.Track.Name,
+			}
+			newSongs = append(newSongs, nsd)
+		}
+	}
+	return newSongs
 }
