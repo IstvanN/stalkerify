@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 
 	"github.com/zmb3/spotify/v2"
@@ -31,16 +32,9 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	if playlist.Tracks.Total > currentPi.NumberOfTracks {
-		log.Println("new song found, email has been sent to you!")
-		if err := sendMail(playlist.Name); err != nil {
-			log.Fatalln(err)
-		}
+	fmt.Println(playlist.Tracks)
 
-		if err := updatePlaylistInfo(currentPi, playlist); err != nil {
-			log.Fatalln(err)
-		}
-		return
+	if err := comparePlaylistWithPlaylistInfoInDB(playlist, currentPi); err != nil {
+		fmt.Println(err)
 	}
-	log.Println("no new song found!")
 }

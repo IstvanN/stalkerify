@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
 
 	"github.com/globalsign/mgo/bson"
@@ -40,5 +41,21 @@ func updatePlaylistInfo(currentPi playListInfo, playlist *spotify.FullPlaylist) 
 		return fmt.Errorf("error updating playlist info in DB: %v", err)
 	}
 
+	return nil
+}
+
+func comparePlaylistWithPlaylistInfoInDB(playlist *spotify.FullPlaylist, pi playListInfo) error {
+	if playlist.Tracks.Total > pi.NumberOfTracks {
+		log.Println("new song found, email has been sent to you!")
+		if err := sendMail(playlist.Name); err != nil {
+			return fmt.Errorf("error sending mail: ", err)
+		}
+
+		if err := updatePlaylistInfo(pi, playlist); err != nil {
+			return fmt.Errorf("error updating playlistinfo in DB: ", err)
+		}
+		return nil
+	}
+	log.Println("no new song found!")
 	return nil
 }
