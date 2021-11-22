@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
@@ -49,11 +50,11 @@ func updatePlaylistInfo(currentPi playListInfo, playlist *spotify.FullPlaylist) 
 	return nil
 }
 
-func comparePlaylistWithPlaylistInfoInDB(playlist *spotify.FullPlaylist, pi playListInfo) error {
+func comparePlaylistWithPlaylistInfoInDB(playlist *spotify.FullPlaylist, pi playListInfo, client *spotify.Client) error {
 	if playlist.Tracks.Total > pi.NumberOfTracks {
 		log.Println("new song found, email has been sent to you!")
 
-		newSongs, err := getNewSongDatas(playlist, pi)
+		newSongs, err := getNewSongDatas(playlist, pi, client)
 		if err != nil {
 			return fmt.Errorf("error getting info on new songs: %v", err)
 		}
@@ -70,7 +71,7 @@ func comparePlaylistWithPlaylistInfoInDB(playlist *spotify.FullPlaylist, pi play
 	return nil
 }
 
-func getNewSongDatas(playlist *spotify.FullPlaylist, pi playListInfo) ([]newSongData, error) {
+func getNewSongDatas(playlist *spotify.FullPlaylist, pi playListInfo, client *spotify.Client) ([]newSongData, error) {
 	var newSongs []newSongData
 	for i, track := range playlist.Tracks.Tracks {
 		if i > pi.NumberOfTracks-1 {
@@ -78,8 +79,14 @@ func getNewSongDatas(playlist *spotify.FullPlaylist, pi playListInfo) ([]newSong
 			if err != nil {
 				return nil, err
 			}
+
+			user, err := client.GetUsersPublicProfile(context.Background(), spotify.ID(track.AddedBy.ID))
+			if err != nil {
+				return nil, err
+			}
+
 			nsd := newSongData{
-				addedBy: track.AddedBy.ID,
+				addedBy: user.DisplayName,
 				artist:  track.Track.Artists[0].Name,
 				title:   track.Track.Name,
 				addedAt: addedAt,

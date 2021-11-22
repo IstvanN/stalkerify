@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
 
 	"github.com/zmb3/spotify/v2"
@@ -32,9 +31,7 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	fmt.Println(playlist.Tracks)
-
-	if err := comparePlaylistWithPlaylistInfoInDB(playlist, currentPi); err != nil {
-		fmt.Println(err)
+	if err := comparePlaylistWithPlaylistInfoInDB(playlist, currentPi, client); err != nil {
+		log.Fatalln(err)
 	}
 }
