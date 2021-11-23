@@ -1,9 +1,11 @@
 package main
 
 import (
+	"encoding/csv"
 	"fmt"
 	"net/smtp"
 	"os"
+	"strings"
 )
 
 var (
@@ -24,7 +26,13 @@ func sendMail(playlistName string, newSongs []newSongData) error {
 
 	auth := smtp.PlainAuth("", mailUser, mailPw, mailSmtpHost)
 
-	if err := smtp.SendMail(mailSmtpHost+":"+mailSmtpPort, auth, mailFrom, []string{mailTo}, msg); err != nil {
+	r := csv.NewReader(strings.NewReader(mailTo))
+	mailToSlice, err := r.Read()
+	if err != nil {
+		return err
+	}
+
+	if err := smtp.SendMail(mailSmtpHost+":"+mailSmtpPort, auth, mailFrom, mailToSlice, msg); err != nil {
 		return fmt.Errorf("error sending mail: %v", err)
 	}
 
