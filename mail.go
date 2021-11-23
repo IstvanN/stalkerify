@@ -26,10 +26,9 @@ func sendMail(playlistName string, newSongs []newSongData) error {
 
 	auth := smtp.PlainAuth("", mailUser, mailPw, mailSmtpHost)
 
-	r := csv.NewReader(strings.NewReader(mailTo))
-	mailToSlice, err := r.Read()
+	mailToSlice, err := convertCSVtoSliceOfStrings(mailTo)
 	if err != nil {
-		return err
+		return fmt.Errorf("error converting mail to from csv to slice of strings: %v", err)
 	}
 
 	if err := smtp.SendMail(mailSmtpHost+":"+mailSmtpPort, auth, mailFrom, mailToSlice, msg); err != nil {
@@ -47,4 +46,14 @@ func formMessage(newSongs []newSongData) string {
 	}
 
 	return finalMessage + "Stalkerify app @ Clusteroid created by archiez"
+}
+
+func convertCSVtoSliceOfStrings(inputCsv string) ([]string, error) {
+	r := csv.NewReader(strings.NewReader(inputCsv))
+	slice, err := r.Read()
+	if err != nil {
+		return nil, err
+	}
+
+	return slice, nil
 }

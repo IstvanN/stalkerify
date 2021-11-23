@@ -21,17 +21,24 @@ func main() {
 	}
 	log.Println("successfully created Spotify client!")
 
-	playlist, err := client.GetPlaylist(context.Background(), spotify.ID(playlistID))
+	playlistIDsSlice, err := convertCSVtoSliceOfStrings(playlistIDs)
 	if err != nil {
-		log.Fatalln(err)
+		log.Fatal(err)
 	}
 
-	currentPi, err := getPlaylistInfoByID(playlist.ID)
-	if err != nil {
-		log.Fatalln(err)
-	}
+	for _, plid := range playlistIDsSlice {
+		playlist, err := client.GetPlaylist(context.Background(), spotify.ID(plid))
+		if err != nil {
+			log.Fatalln(err)
+		}
 
-	if err := comparePlaylistWithPlaylistInfoInDB(playlist, currentPi, client); err != nil {
-		log.Fatalln(err)
+		currentPi, err := getPlaylistInfoByID(playlist.ID)
+		if err != nil {
+			log.Fatalln(err)
+		}
+
+		if err := comparePlaylistWithPlaylistInfoInDB(playlist, currentPi, client); err != nil {
+			log.Fatalln(err)
+		}
 	}
 }

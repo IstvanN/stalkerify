@@ -11,7 +11,7 @@ import (
 	"github.com/zmb3/spotify/v2"
 )
 
-var playlistID = os.Getenv("SPOTIFY_PLAYLIST_ID")
+var playlistIDs = os.Getenv("SPOTIFY_PLAYLIST_IDS")
 
 type playListInfo struct {
 	ID             spotify.ID `bson:"id"`
@@ -51,8 +51,9 @@ func updatePlaylistInfo(currentPi playListInfo, playlist *spotify.FullPlaylist) 
 }
 
 func comparePlaylistWithPlaylistInfoInDB(playlist *spotify.FullPlaylist, pi playListInfo, client *spotify.Client) error {
+	log.Println("checking playlist: ", playlist.Name)
 	if playlist.Tracks.Total < pi.NumberOfTracks {
-		log.Println("playlists song number < number of tracks in DB: maybe someone deleted track(s)")
+		log.Println("playlist's song number < number of tracks in DB: maybe someone deleted track(s)")
 		log.Println("setting it up to date in DB...")
 		if err := updatePlaylistInfo(pi, playlist); err != nil {
 			return fmt.Errorf("error updating playlistinfo in DB: %v", err)
