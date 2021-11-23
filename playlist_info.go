@@ -51,6 +51,16 @@ func updatePlaylistInfo(currentPi playListInfo, playlist *spotify.FullPlaylist) 
 }
 
 func comparePlaylistWithPlaylistInfoInDB(playlist *spotify.FullPlaylist, pi playListInfo, client *spotify.Client) error {
+	if playlist.Tracks.Total < pi.NumberOfTracks {
+		log.Println("playlists song number < number of tracks in DB: maybe someone deleted track(s)")
+		log.Println("setting it up to date in DB...")
+		if err := updatePlaylistInfo(pi, playlist); err != nil {
+			return fmt.Errorf("error updating playlistinfo in DB: %v", err)
+		}
+		log.Printf("number of tracks set to %v in DB\n", pi.NumberOfTracks)
+		return nil
+	}
+
 	if playlist.Tracks.Total > pi.NumberOfTracks {
 		log.Println("new song found, email has been sent to you!")
 
