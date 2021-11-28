@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
@@ -51,13 +52,17 @@ func updatePlaylistInfo(currentPi playlistInfo, playlist *spotify.FullPlaylist) 
 
 func comparePlaylistWithPlaylistInfoInDB(playlist *spotify.FullPlaylist, pi playlistInfo, client *spotify.Client) error {
 	log.Println("checking playlist: ", playlist.Name)
-	nsd, err := getNewSongDatas(playlist, pi)
+	nsd, err := getNewSongDatas(playlist, pi, client)
 	if err != nil {
 		return fmt.Errorf("error getting info on new songs: %v", err)
 	}
 
 	if len(nsd) == 0 {
 		log.Println("no new song found!")
+		log.Println("updating DB because of potential deletes...")
+		if err := updatePlaylistInfo(pi, playlist); err != nil {
+			return fmt.Errorf("error updating playlistinfo in DB: %v", err)
+		}
 		return nil
 	}
 
@@ -83,7 +88,7 @@ func isSongInDB(song *spotify.PlaylistTrack, pi playlistInfo) bool {
 	return false
 }
 
-func getNewSongDatas(playlist *spotify.FullPlaylist, pi playlistInfo) ([]newSongData, error) {
+func getNewSongDatas(playlist *spotify.FullPlaylist, pi playlistInfo, client *spotify.Client) ([]newSongData, error) {
 	var newSongs []newSongData
 
 	for _, track := range playlist.Tracks.Tracks {
@@ -93,13 +98,13 @@ func getNewSongDatas(playlist *spotify.FullPlaylist, pi playlistInfo) ([]newSong
 				return nil, err
 			}
 
-			// user, err := client.GetUsersPublicProfile(context.Background(), spotify.ID(track.AddedBy.ID))
-			// if err != nil {
-			// 	return nil, err
-			// }
+			spotifyUser, err := client.GetUsersPublicProfile(context.Background(), spotify.ID(track.AddedBy.ID))
+			if err != nil {
+				return nil, err
+			}
 
 			ns := newSongData{
-				addedBy: track.AddedBy.DisplayName,
+				addedBy: spotifyUser.DisplayName,
 				artist:  track.Track.Artists[0].Name,
 				title:   track.Track.Name,
 				addedAt: addedAt,
