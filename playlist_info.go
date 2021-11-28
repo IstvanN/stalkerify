@@ -63,15 +63,16 @@ func comparePlaylistWithPlaylistInfoInDB(playlist *spotify.FullPlaylist, pi play
 	}
 
 	if playlist.Tracks.Total > pi.NumberOfTracks {
-		log.Println("new song found, email has been sent to you!")
-
 		newSongs, err := getNewSongDatas(playlist, pi, client)
 		if err != nil {
 			return fmt.Errorf("error getting info on new songs: %v", err)
 		}
+
 		if err := sendMail(playlist.Name, newSongs); err != nil {
 			return fmt.Errorf("error sending mail: %v", err)
 		}
+
+		log.Println("new song found, email has been sent to you!")
 
 		if err := updatePlaylistInfo(pi, playlist); err != nil {
 			return fmt.Errorf("error updating playlistinfo in DB: %v", err)
@@ -119,5 +120,5 @@ func transformAddedAt(old string) (string, error) {
 		return "", err
 	}
 
-	return addedAt.In(budapest).Format("2006.01.06 15:03"), nil
+	return addedAt.In(budapest).Format("Monday, 2006 Jan 2 15:04"), nil
 }

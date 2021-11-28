@@ -42,7 +42,7 @@ func formMessage(newSongs []newSongData) string {
 	finalMessage := "Hey there! Here is a list of the new songs:\r\n" + "\r\n"
 
 	for i, ns := range newSongs {
-		finalMessage += fmt.Sprintf("%d. %s - %s added by %v at %v\r\n", i+1, ns.artist, ns.title, ns.addedBy, ns.addedAt) + "\r\n"
+		finalMessage += fmt.Sprintf("%d. %s - %s added by %v on %v\r\n", i+1, ns.artist, ns.title, ns.addedBy, ns.addedAt) + "\r\n"
 	}
 
 	return finalMessage + "Stalkerify app @ Clusteroid created by archiez"
