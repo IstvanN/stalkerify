@@ -103,9 +103,11 @@ func getNewSongDatas(playlist *spotify.FullPlaylist, pi playlistInfo, client *sp
 				return nil, err
 			}
 
+			artistName := createArtistNameOfArtists(track.Track.Artists)
+
 			ns := newSongData{
 				addedBy: spotifyUser.DisplayName,
-				artist:  track.Track.Artists[0].Name,
+				artist:  artistName,
 				title:   track.Track.Name,
 				addedAt: addedAt,
 			}
@@ -128,4 +130,17 @@ func transformAddedAt(old string) (string, error) {
 	}
 
 	return addedAt.In(budapest).Format("Monday, 2006 Jan 2 15:04"), nil
+}
+
+func createArtistNameOfArtists(artists []spotify.SimpleArtist) string {
+	var artistName string
+	for i, artist := range artists {
+		if i == len(artists)-1 {
+			artistName += artist.Name
+		} else {
+			artistName += artist.Name + ", "
+		}
+	}
+
+	return artistName
 }
