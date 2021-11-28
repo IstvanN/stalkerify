@@ -56,20 +56,20 @@ func comparePlaylistWithPlaylistInfoInDB(playlist *spotify.FullPlaylist, pi play
 		return fmt.Errorf("error getting info on new songs: %v", err)
 	}
 
-	if len(nsd) > 0 {
-		if err := sendMail(playlist.Name, nsd); err != nil {
-			return fmt.Errorf("error sending mail: %v", err)
-		}
-		log.Println("new song found, email has been sent to you!")
-
-		if err := updatePlaylistInfo(pi, playlist); err != nil {
-			return fmt.Errorf("error updating playlistinfo in DB: %v", err)
-		}
-
+	if len(nsd) == 0 {
+		log.Println("no new song found!")
 		return nil
 	}
 
-	log.Println("no new song found!")
+	if err := sendMail(playlist.Name, nsd); err != nil {
+		return fmt.Errorf("error sending mail: %v", err)
+	}
+	log.Println("new song found, email has been sent to you!")
+
+	if err := updatePlaylistInfo(pi, playlist); err != nil {
+		return fmt.Errorf("error updating playlistinfo in DB: %v", err)
+	}
+
 	return nil
 }
 
