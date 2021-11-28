@@ -51,7 +51,7 @@ func updatePlaylistInfo(currentPi playlistInfo, playlist *spotify.FullPlaylist) 
 }
 
 func comparePlaylistWithPlaylistInfoInDB(playlist *spotify.FullPlaylist, pi playlistInfo, client *spotify.Client) error {
-	log.Println("checking playlist: ", playlist.Name)
+	log.Println("checking playlist:", playlist.Name)
 	nsd, err := getNewSongDatas(playlist, pi, client)
 	if err != nil {
 		return fmt.Errorf("error getting info on new songs: %v", err)
