@@ -52,6 +52,10 @@ func updatePlaylistInfo(currentPi playlistInfo, playlist *spotify.FullPlaylist) 
 
 func comparePlaylistWithPlaylistInfoInDB(playlist *spotify.FullPlaylist, pi playlistInfo, client *spotify.Client) error {
 	log.Println("checking playlist:", playlist.Name)
+	if err := appendAdditionalSongsToPlaylist(playlist, client); err != nil {
+		return err
+	}
+
 	nsd, err := getNewSongDatas(playlist, pi, client)
 	if err != nil {
 		return fmt.Errorf("error getting info on new songs: %v", err)
@@ -88,9 +92,20 @@ func isSongInDB(song *spotify.PlaylistTrack, pi playlistInfo) bool {
 	return false
 }
 
+func appendAdditionalSongsToPlaylist(playlist *spotify.FullPlaylist, client *spotify.Client) error {
+	request := spotify.Offset(100)
+	songs, err := client.GetPlaylistTracks(context.Background(), playlist.ID, request)
+	if err != nil {
+		return fmt.Errorf("error returning songs from spotify API: %v", err)
+	}
+
+	playlist.Tracks.Tracks = append(playlist.Tracks.Tracks, songs.Tracks...)
+
+	return nil
+}
+
 func getNewSongDatas(playlist *spotify.FullPlaylist, pi playlistInfo, client *spotify.Client) ([]newSongData, error) {
 	var newSongs []newSongData
-
 	for _, track := range playlist.Tracks.Tracks {
 		if !isSongInDB(&track, pi) {
 			addedAt, err := transformAddedAt(track.AddedAt)
